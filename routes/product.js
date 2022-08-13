@@ -16,84 +16,65 @@ router.post("/", verifyTokenAndAdmin, async (req, res) => {
     res.status(500).json(err);
   }
 });
-// //get all Products
-// router.get("/", verifyTokenAndAdmin, async (req, res) => {
-//   const query = req.query.new;
-//   try {
-//     const users = query
-//       ? await User.find().sort({ _id: -1 }).limit(5)
-//       : await User.find();
-//     res.status(200).json(users);
-//   } catch (err) {
-//     res.status(500).json(err);
-//   }
-// });
-// //get user
-// router.get("/find/:id", verifyTokenAndAdmin, async (req, res) => {
-//   try {
-//     const user = await User.findById(req.params.id);
-//     const { password, ...others } = user._doc;
-//     res.status(200).json(others);
-//   } catch (err) {
-//     res.status(500).json(err);
-//   }
-// });
-// //get user stats
-// router.get("/stats", verifyTokenAndAdmin, async (req, res) => {
-//   console.log("hi");
-//   const date = new Date();
-//   const lastYear = new Date(date.setFullYear(date.getFullYear() - 1));
-//   console.log(lastYear);
-//   try {
-//     const data = await User.aggregate([
-//       { $match: { createdAt: { $gte: lastYear } } },
-//       {
-//         $project: {
-//           month: { $month: "$createdAt" },
-//         },
-//       },
-//       {
-//         $group: {
-//           _id: "$month",
-//           total: { $sum: 1 },
-//         },
-//       },
-//     ]);
-//     res.status(200).json(data);
-//   } catch (err) {
-//     res.status(500).json(err);
-//   }
-// });
-// //update user
-// router.put("/:id", verifyTokenAndAuthorization, async (req, res) => {
-//   if (req.body.password) {
-//     req.body.password = CryptoJS.AES.encrypt(
-//       req.body.password,
-//       process.env.PASS_SEC
-//     ).toString();
-//   }
-//   try {
-//     const updatedUser = await User.findByIdAndUpdate(
-//       req.params.id,
-//       {
-//         $set: req.body,
-//       },
-//       { new: true }
-//     );
-//     res.status(200).json(updatedUser);
-//   } catch (err) {
-//     res.status(500).json(err);
-//   }
-// });
+//update product
+router.put("/:id", verifyTokenAndAdmin, async (req, res) => {
+  try {
+    const updatedProduct = await Product.findByIdAndUpdate(
+      req.params.id,
+      {
+        $set: req.body,
+      },
+      { new: true }
+    );
+    res.status(200).json(updatedProduct);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
 
-// //delete user
-// router.delete("/:id", verifyTokenAndAuthorization, async (req, res) => {
-//   try {
-//     await User.findByIdAndDelete(req.params.id);
-//     res.status(200).json("User has been deleted...");
-//   } catch (err) {
-//     res.status(500).json(err);
-//   }
-// });
+//delete product
+router.delete("/:id", verifyTokenAndAdmin, async (req, res) => {
+  try {
+    await Product.findByIdAndDelete(req.params.id);
+    res.status(200).json("Product has been deleted...");
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
+//get product
+router.get("/:id", async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    if (!product) {
+      res.status(400).json("This product doesnt exist");
+    } else {
+      res.status(200).json(product);
+    }
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
+//get all Products
+router.get("/", async (req, res) => {
+  const queryNew = req.query.new;
+  const queryCategory = req.query.category;
+  try {
+    let products;
+    if (queryNew) {
+      products = await Product.find().sort({ createdAt: -1 }).limit(5);
+    } else if (queryCategory) {
+      products = await Product.find({
+        categories: {
+          $in: [queryCategory],
+        },
+      });
+    } else {
+      products = await Product.find();
+    }
+    res.status(200).json(products);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
 
 module.exports = router;

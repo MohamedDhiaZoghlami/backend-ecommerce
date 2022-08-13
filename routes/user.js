@@ -30,7 +30,6 @@ router.get("/find/:id", verifyTokenAndAdmin, async (req, res) => {
 });
 //get user stats
 router.get("/stats", verifyTokenAndAdmin, async (req, res) => {
-  console.log("hi");
   const date = new Date();
   const lastYear = new Date(date.setFullYear(date.getFullYear() - 1));
   console.log(lastYear);
